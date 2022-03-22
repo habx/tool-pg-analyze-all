@@ -13,7 +13,7 @@ parser.add_argument('-d', '--database', help='Database name', default='postgres'
 parser.add_argument('-p', '--port', help='Database port', default='5432')
 parser.add_argument('-U', '--username', help='Database user', default=os.getenv('USER', 'postgres'))
 parser.add_argument('-e', '--exclude', help='Exclude databases', nargs='+', default=['rdsadmin', 'postgres'])
-
+parser.add_argument('-r', '--reindex', help='Reindex databases', action='store_true')
 password = os.getenv('PGPASSWORD', '')
 
 args = parser.parse_args()
@@ -32,6 +32,16 @@ def analyze_database(dbname: str):
             logging.info("Analyzing table %s.%s", row['schemaname'], row['relname'])
             cur2 = conn.cursor()
             cur2.execute(f"vacuum analyze \"{row['schemaname']}\".\"{row['relname']}\"")
+
+    if args.reindex:
+        logging.info("Reindexing database")
+        cur.execute("select pg_database_size(%s) as size", (dbname,))
+        size_before = cur.fetchone()['size']
+        cur.execute(f"reindex database \"{dbname}\"")
+        cur.execute("select pg_database_size(%s) as size", (dbname,))
+        size_after = cur.fetchone()['size']
+        gain = (size_before - size_after) / size_before * 100
+        logging.info("Reindexed database %s, size before: %d, size after: %d, gain: %.2f%%", dbname, size_before, size_after, gain)
 
 
 def analyze_everything():
