@@ -29,12 +29,12 @@ def analyze_database(dbname: str):
     cur.execute("select * from pg_stat_user_tables")
     for row in cur.fetchall():
         if row['last_analyze'] is None and row['last_autoanalyze'] is None:
-            logging.info("Analyzing table %s.%s", row['schemaname'], row['relname'])
+            logging.info("Analyzing table %s / %s.%s", dbname, row['schemaname'], row['relname'])
             cur2 = conn.cursor()
             cur2.execute(f"vacuum analyze \"{row['schemaname']}\".\"{row['relname']}\"")
 
     if args.reindex:
-        logging.info("Reindexing database")
+        logging.info("Reindexing database %s", dbname)
         cur.execute("select pg_database_size(%s) as size", (dbname,))
         size_before = cur.fetchone()['size']
         cur.execute(f"reindex database \"{dbname}\"")
