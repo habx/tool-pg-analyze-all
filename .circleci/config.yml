@@ -1,0 +1,101 @@
+# --------------------------------------------------- #
+# https://github.com/habx/devops-template-circleci    #
+# ----------- DO NOT EDIT BELOW THIS LINE ----------- #
+# --------------------------------------------------- #
+version: 2.1
+# --- Anchor alias ---- #
+alias:
+# ---- Jobs filters ---- #
+  - &filters_only_dev
+    branches:
+      only: dev
+    tags:
+      ignore: /.*/
+  - &filters_only_branch
+    branches:
+      ignore:
+        - dev
+    tags:
+      ignore: /.*/
+  - &filters_only_tags
+    branches:
+      ignore: /.*/
+    tags:
+      only: /^v.*/
+
+orbs:
+  python: habx/python@3.0.0
+  containers: habx/containers@0.4.0
+# --------------------------------------------------- #
+# -------------- DEFINE YOUR WORKFLOW --------------- #
+# --------------------------------------------------- #
+
+kubernetes-config: &kubernetes-config
+  container-image-updates: ${CIRCLE_PROJECT_REPONAME}=${AWS_ECR_ACCOUNT_URL}/${CIRCLE_PROJECT_REPONAME}:$(if [ -z "$CIRCLE_TAG" ]; then echo $(echo $CIRCLE_BRANCH | sed 's/\/\|@//g')-${CIRCLE_SHA1:0:7}; else echo $CIRCLE_TAG; fi)
+  resource-name: deployment/${CIRCLE_PROJECT_REPONAME}
+  namespace: $(if [ -z "$CIRCLE_TAG" ]; then echo dev; else echo staging; fi)
+
+docker-config: &docker-config
+  build-infos-cache-key: v1
+  repo: ${CIRCLE_PROJECT_REPONAME}
+  extra-build-args: --build-arg REVISION="$(git rev-parse --short HEAD)" --build-arg CREATED="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" --build-arg VERSION="$(cat version.txt)" --build-arg TITLE="${CIRCLE_PROJECT_REPONAME}" --build-arg SOURCE="${CIRCLE_REPOSITORY_URL}" --build-arg AUTHORS="${CIRCLE_USERNAME}" --build-arg GEMFURY_READ_TOKEN=${GEMFURY_READ_TOKEN} --build-arg GEMFURY_ORGA=${GEMFURY_ORGA}
+  tag: $(if [ -z "$CIRCLE_TAG" ]; then echo $(echo $CIRCLE_BRANCH | sed 's/\/\|@//g')-${CIRCLE_SHA1:0:7}; else echo $CIRCLE_TAG; fi)
+
+python-install-packages: &python-install-packages
+  pypi-cache: false
+  venv-cache: false
+  args: -d --ignore-pipfile
+  install-debian-packages: true
+
+workflows:
+  tests:
+    jobs:
+      - python/static-tests:
+          context: default_env_vars
+          <<: *python-install-packages
+          filters:
+            <<: *filters_only_branch
+      - python/tests:
+          context: default_env_vars
+          <<: *python-install-packages
+          filters:
+            <<: *filters_only_branch
+      - containers/build:
+          context: default_env_vars
+          <<: *docker-config
+          tag: local
+          filters:
+            <<: *filters_only_branch
+          requires:
+            - python/static-tests
+            - python/tests
+
+  deploy_to_eks_ns_dev:
+    jobs:
+      - python/static-tests:
+          context: default_env_vars
+          <<: *python-install-packages
+          filters:
+            <<: *filters_only_dev
+      - python/tests:
+          context: default_env_vars
+          <<: *python-install-packages
+          filters:
+            <<: *filters_only_dev
+      - containers/build-and-push-with-ecr:
+          context: default_env_vars
+          <<: *docker-config
+          requires:
+            - python/static-tests
+            - python/tests
+          filters:
+            <<: *filters_only_dev
+
+  release_and_deploy_to_eks_ns_staging:
+    jobs:
+      - containers/build-and-push-with-ecr:
+          context: default_env_vars
+          <<: *docker-config
+          filters:
+            <<: *filters_only_tags
+            
