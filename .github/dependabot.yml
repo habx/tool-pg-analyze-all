@@ -1,0 +1,22 @@
+version: 2
+registries:
+  fury:
+    type: python-index
+    url: https://pypi.fury.io/habxtech
+    username: ${{secrets.GEMFURY_READ_TOKEN}}
+    password: ${{secrets.GEMFURY_READ_TOKEN}}
+    replaces-base: true
+updates:
+  - package-ecosystem: "pip"
+    insecure-external-code-execution: allow
+    directory: "/"
+    registries:
+      - fury
+    schedule:
+      interval: "daily"
+    # https://docs.github.com/en/code-security/supply-chain-security/keeping-your-dependencies-updated-automatically/configuration-options-for-dependency-updates#versioning-strategy
+    versioning-strategy: auto
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "daily"
