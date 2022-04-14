@@ -1,6 +1,5 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "2022-03-25",
   "extends": [
     "github>habx/devops-repo-shared-configs//renovate/py-tool"
   ]
