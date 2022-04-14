@@ -1,3 +1,4 @@
 # https://github.com/habx/devops-repo-shared-configs/blob/dev/github-settings/py-tool.yml
 # 2022-03-19
+# last_update: 2022-04-10
 _extends: devops-repo-shared-configs:github-settings/py-tool-no-codecov.yml
