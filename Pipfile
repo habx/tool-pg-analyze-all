@@ -9,6 +9,7 @@ psycopg2-binary = "2.9.3"
 [dev-packages]
 pylint = ">=2.14.3"
 pytest = ">=7.1.2"
+pycodestyle = ">=2.8.0"
 
 [requires]
 python_version = "3.9"
