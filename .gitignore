@@ -1,1 +1,4 @@
 .idea/
+test-results/
+.coverage
+coverage.xml
