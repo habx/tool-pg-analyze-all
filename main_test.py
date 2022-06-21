@@ -1,10 +1,13 @@
 """Testing the app"""
 
-import os
+import main
 
 class TestMain:
     """Testing the app"""
 
     def test_main(self):
         """Testing the app"""
-        os.system('./main.py -U postgres')
+        args = main.parse_args()
+        args.password = 'postgres'
+        args.user = 'postgres'
+        main.analyze_everything()
