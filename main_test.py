@@ -11,7 +11,7 @@ class TestMain:
     def test_main(self):
         """Testing the app"""
         args = main.parse_args([
-            '--host', 'localhost',
+            '--host', 'postgres',
             '--port', '5432',
             '--username', 'test',
             '--password', 'azerty',
