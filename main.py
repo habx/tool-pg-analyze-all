@@ -75,7 +75,8 @@ def parse_args(args: List[str] = None) -> Any:
 
     args = parser.parse_args(args) if args else parser.parse_args()
 
-    args.password = os.getenv('PGPASSWORD', '')
+    if not args.password:
+        args.password = os.getenv('PGPASSWORD', '')
 
     return args
 
