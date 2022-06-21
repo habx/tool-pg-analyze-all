@@ -23,15 +23,6 @@ alias:
     tags:
       only: /^v.*/
 
-  - &docker_postgres
-    docker:
-      - image: habx/postgres
-        name: postgres
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
-
 orbs:
   python: habx/python@3.0.0
   containers: habx/containers@0.4.0
@@ -64,10 +55,12 @@ workflows:
           <<: *python-install-packages
           filters:
             <<: *filters_only_branch
-      - python/tests:
+      - python/tests-pg:
           context: default_env_vars
+          postgres-database: postgres
+          postgres-user: postgres
+          postgres-password: postgres
           <<: *python-install-packages
-          <<: *docker_postgres
           filters:
             <<: *filters_only_branch
       - containers/build:
