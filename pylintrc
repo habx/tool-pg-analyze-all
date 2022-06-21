@@ -1,0 +1,10 @@
+[FORMAT]
+max-line-length=120
+
+[MASTER]
+disable=invalid-name,too-many-lines,too-many-branches,too-many-statements,too-many-public-methods,too-few-public-methods
+
+[SIMILARITIES]
+
+# Minimum lines number of a similarity.
+min-similarity-lines=8
