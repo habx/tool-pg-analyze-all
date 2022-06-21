@@ -5,12 +5,12 @@
 import logging
 import argparse
 import os
-from typing import Any
+from typing import Any, List
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
 
-def analyze_database(args: Any, dbname: str):
+def analyze_database(args: argparse.Namespace, dbname: str):
     """Analyze database"""
 
     logging.info("Analyzing database %s", dbname)
@@ -45,7 +45,7 @@ def analyze_database(args: Any, dbname: str):
         )
 
 
-def analyze_everything(args: Any):
+def analyze_everything(args: argparse.Namespace):
     """Analyze everything"""
     conn = psycopg2.connect(dbname=args.database, user=args.username,
                             password=args.password, host=args.host, port=args.port)
@@ -58,10 +58,7 @@ def analyze_everything(args: Any):
             analyze_database(args, dbname)
 
 
-
-
-
-def parse_args() -> Any:
+def parse_args(args: List[str] = None) -> Any:
     """Parse arguments"""
     parser = argparse.ArgumentParser(description='Process all database statistics')
     parser.add_argument('-H', '--host', help='Database host', default='localhost')
@@ -70,22 +67,24 @@ def parse_args() -> Any:
     parser.add_argument('-p', '--port', help='Database port', default='5432')
     parser.add_argument('-U', '--username', help='Database user',
                         default=os.getenv('USER', 'postgres'))
+    parser.add_argument('-P', '--password', help='Database password', default='')
     parser.add_argument('-e', '--exclude', help='Exclude databases',
                         nargs='+', default=['rdsadmin', 'postgres'])
     parser.add_argument('-r', '--reindex',
                         help='Reindex databases', action='store_true')
 
-    args = parser.parse_args()
+    args = parser.parse_args(args) if args else parser.parse_args()
 
     args.password = os.getenv('PGPASSWORD', '')
 
     return args
+
 
 def main():
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s')
     args = parse_args()
     analyze_everything(args)
 
+
 if __name__ == '__main__':
     main()
-

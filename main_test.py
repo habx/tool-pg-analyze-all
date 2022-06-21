@@ -1,15 +1,19 @@
 """Testing the app"""
 
+from argparse import Namespace
 import main
 import os
+
 
 class TestMain:
     """Testing the app"""
 
     def test_main(self):
         """Testing the app"""
-        args = main.parse_args()
-        args.database = os.getenv('PGDATABASE', 'test-db')
-        args.user = os.getenv('PGUSER', 'test')
-        args.password = os.getenv('PGPASSWORD', 'azerty')
-        main.analyze_everything()
+        args = main.parse_args([
+            '--host', 'localhost',
+            '--port', '5432',
+            '--username', 'test',
+            '--password', 'azerty',
+            '--database', 'test-db', '--reindex'])
+        main.analyze_everything(args)
