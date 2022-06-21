@@ -57,9 +57,10 @@ workflows:
             <<: *filters_only_branch
       - python/tests-pg:
           context: default_env_vars
-          postgres-database: postgres
-          postgres-user: postgres
-          postgres-password: postgres
+          parameters:
+            postgres-database: postgres
+            postgres-user: postgres
+            postgres-password: postgres
           <<: *python-install-packages
           filters:
             <<: *filters_only_branch
