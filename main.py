@@ -82,6 +82,7 @@ def parse_args(args: List[str] = None) -> Any:
 
 
 def main():
+    """Main function"""
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s')
     args = parse_args()
     analyze_everything(args)
